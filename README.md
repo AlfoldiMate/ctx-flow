@@ -8,25 +8,30 @@ for the job, guards the reads that flood the context, and keeps durable
 memory in [agmem](https://github.com/AlfoldiMate/agmem) so a session can be
 cleared instead of compacted.
 
-This branch is the **seed**: the rules, the hooks, the seven agent roles as
-stubs, and `/ctx-onboard`, which grows the seed into your project's own
-workflow. The `sln-*` branches are worked examples of what that produces —
-`sln-rust-nu-fresh-proj` is a fresh Rust + Nushell project on GitHub.
+This branch, `sln-rust-nu-fresh-proj`, is the **seed grown for a fresh
+Rust + Nushell project on GitHub** — what `/ctx-onboard` produces from the
+`main` branch given that description. Use it as-is for such a project, or as
+the worked example while onboarding a different stack from `main`.
 
 ## Install
 
 ```bash
-git clone --branch main https://github.com/AlfoldiMate/ctx-flow /path/to/your-project/.claude
+git clone --branch sln-rust-nu-fresh-proj https://github.com/AlfoldiMate/ctx-flow /path/to/your-project/.claude
 rm -rf /path/to/your-project/.claude/.git      # it is your project's folder now
 ```
 
-Three dependencies, and two registrations:
+The seed's three dependencies plus what onboarding added, and two registrations:
 
 | Tool | Why | Install |
 |---|---|---|
 | [nu](https://www.nushell.sh) | runs the hooks and scripts; its MCP server is the structured shell | `brew install nushell` |
 | [agmem](https://github.com/AlfoldiMate/agmem) ≥ 0.2.0 | memory across sessions, via its Claude Code plugin | `brew install AlfoldiMate/tap/agmem` |
 | [ast-grep](https://ast-grep.github.io) | syntax-aware code search | `brew install ast-grep` |
+| [gh](https://cli.github.com) | GitHub, always over the GitHub MCP server | `brew install gh && gh auth login` |
+| [rtk](https://github.com/rtk-ai/rtk) | transparently compresses Bash output (hook ships here; never also `rtk init -g`) | `brew install rtk` |
+| [playwright-cli](https://github.com/microsoft/playwright-cli) | browser driving as shell commands, for the `browser` agent | `npm i -g playwright-cli` |
+| acli *(optional)* | Jira, for the `tracker` agent | Atlassian's installer |
+| tree-sitter-cli *(optional)* | builds grammars ast-grep does not ship (`/ctx-grammar nu`) | `npm i -g tree-sitter-cli` |
 
 ```bash
 claude mcp add nu -- nu --mcp
@@ -38,7 +43,7 @@ whatever your terminal runs. Then, in a session:
 
 ```
 /ctx-doctor      # every row above, both registrations, the hooks, ast-grep on your language
-/ctx-onboard     # grow the seed into your workflow (see Configure)
+/ctx-onboard     # re-run to adjust for your project (see Configure)
 ```
 
 ## What's in the box
@@ -47,8 +52,8 @@ whatever your terminal runs. Then, in a session:
 |---|---|---|
 | `CLAUDE.md` | the routing table, payload and shell discipline, what memory adds, answer shape — rules only, under 6 kB | every session |
 | `output-styles/ctx-flow.md` | the ~25 lines that must survive momentum mid-task | every session, in the system prompt |
-| `agents/` | seven roles — `runner`, `scout`, `researcher`, `verifier`, `focus`, `browser`, `tracker` — each a return contract with a `<!-- ctx-onboard -->` marker where the project body goes | when dispatched |
-| `hooks/scripts/` | `read-guard.nu` denies whole-file reads over 300 lines; `context-nudge.nu` says "checkpoint, then clear" at 120k tokens and per 40k after; `idiom-nudge.nu` notes once per session when `sed`/`python`/`grep` stood in for nu or ast-grep | by event |
+| `agents/` | seven roles — `runner`, `scout`, `researcher`, `verifier`, `focus`, `browser`, `tracker` — each a return contract plus the project body onboarding wrote | when dispatched |
+| `hooks/scripts/` | `rtk hook claude` compresses every Bash result; `read-guard.nu` denies whole-file reads over 300 lines; `context-nudge.nu` says "checkpoint, then clear" at 120k tokens and per 40k after; `idiom-nudge.nu` notes once per session when `sed`/`python`/`grep` stood in for nu or ast-grep | by event |
 | `skills/ctx-*` | `/ctx-doctor`, `/ctx-checkpoint`, `/ctx-grammar`, `/ctx-onboard`; `ctx-ast-grep` (rule writing) and `ctx-ast-grep-card` (preloaded into agents) | on invocation / preload |
 | `scripts/` | `doctor.nu`, `doc-put.nu` (a subagent's long output → an agmem document), `usage.nu` (where past sessions spent tokens), `onboard-scan.nu`, `build-grammar.nu` + `grammars.nu` | by a skill |
 | `docs/reference.md` | return-contract template, dispatch rules, the memory mapping, playbook guards, where MCP fits | on demand |
@@ -75,6 +80,27 @@ whatever your terminal runs. Then, in a session:
 
 Why each rule exists, at length: `docs/reference.md` and the comment
 headers of the hooks.
+
+## What onboarding added
+
+Each row names the evidence that justified it; a re-run of `/ctx-onboard`
+starts from here.
+
+| Artifact | Evidence |
+|---|---|
+| `runner` filled with the cargo / clippy / fmt / nu commands, fastest first | Bash results dominated past sessions; `cargo test` output was the largest single source |
+| `scout` filled with the workspace layout; memory wired (`role:scout`) | most `Read` calls preceded a symbol hunt |
+| `verifier` and `focus` filled with Rust false-positive shapes and the layering rule; memory wired | wrong verdicts and plans are the expensive failures |
+| `researcher` pointed at docs.rs, the Rust books and the installed `nu` | nu changes at minor versions; the binary outranks the web |
+| `browser` on `playwright-cli`, `tracker` on `gh` (+ `acli`) | CLIs found on the machine; the forge is GitHub |
+| `rtk hook claude` first on `PreToolUse` `Bash` | every Bash result arrives compressed; the doctor flags a doubled registration |
+| doctor rows for gh, gh auth, playwright-cli, rtk, acli, tree-sitter | one row per routed tool |
+| toolbox lines in `CLAUDE.md` for gh/acli, playwright-cli, rtk and Nustro's `worktree` plugin | the routing table now names them |
+
+Not bundled, used from [Nustro](https://github.com/AlfoldiMate/Nustro): the
+`nushell` skill (deep nu reference, loaded when writing nu) and the
+`worktree` plugin (bare repo + sibling worktrees, with the guard hook and
+the session-start layout note).
 
 ## Configure
 
@@ -108,17 +134,13 @@ manual for doing any of this by hand.
 | teach ast-grep a language | `/ctx-grammar <lang>` — builds into `~/.cache/ctx-flow`, registers in a gitignored `sgconfig.yml` |
 | keep a machine-local skill | drop it in `skills/` and list it in `.gitignore` |
 
-Related, not bundled: the `nushell` skill and the `worktree` plugin (bare
-repo + sibling worktrees, with a guard hook) ship with
-[Nustro](https://github.com/AlfoldiMate/Nustro).
-
 ## Layout
 
 ```
 .claude/
 ├── CLAUDE.md               rules; loads every session
 ├── README.md               this file
-├── settings.json           the three hooks and the output style
+├── settings.json           rtk + the three hooks, and the output style
 ├── .gitignore              settings.local.json, .DS_Store, your machine-local skills
 ├── agents/                 runner, scout, researcher, verifier, focus, browser, tracker
 ├── output-styles/          ctx-flow.md

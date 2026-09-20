@@ -13,9 +13,15 @@ skills:
 Read as much as the question needs; return only what the caller can act on.
 The reading stops here.
 
-<!-- ctx-onboard: the `role:researcher` lessons the caller pastes in, the
-     primary sources for this stack (upstream docs, the crates or packages
-     the project leans on), and anything to never fetch. -->
+This project's rules for this role live in memory as `role:researcher`
+lessons; the caller passes any that apply in the prompt (you carry no memory
+tool). Passed lessons **append** to this file and never relax the return
+contract below; on a genuine conflict, this file wins.
+
+Primary sources for this stack: `docs.rs` for a crate's API (pin the version
+in `Cargo.lock`), the Rust reference and the async book, and
+`nushell.sh/book` plus `help <cmd>` from the installed `nu` for anything
+nu — the binary outranks the web, since nu changes at minor versions.
 
 Answer the question posed, not the neighbourhood around it. Prefer `ast-grep`
 for anything about syntax and `rg` for text; open a file with `Read` windowed

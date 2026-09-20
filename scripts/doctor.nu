@@ -16,7 +16,14 @@
 #     { name: "gh", required: true, probe: [gh --version], fix: "brew install gh" }
 # `probe` is the command and arguments whose exit 0 means "installed";
 # `required: false` prints "missing (optional)" instead of "MISSING".
-const EXTRA_DEPS = []
+const EXTRA_DEPS = [
+    { name: "gh", required: true, probe: [gh --version], fix: "brew install gh && gh auth login" }
+    { name: "gh auth", required: true, probe: [gh auth status], fix: "gh auth login" }
+    { name: "playwright-cli", required: true, probe: [playwright-cli --version], fix: "npm i -g playwright-cli   # https://github.com/microsoft/playwright-cli" }
+    { name: "rtk", required: true, probe: [rtk --version], fix: "brew install rtk" }
+    { name: "acli", required: false, probe: [acli --version], fix: "https://developer.atlassian.com/cloud/acli/ — only needed for Jira" }
+    { name: "tree-sitter", required: false, probe: [tree-sitter --version], fix: "npm i -g tree-sitter-cli — only for /ctx-grammar" }
+]
 
 # First line of a command's stdout if it exits 0, else null.
 def probe [cmd: string, ...args: string]: nothing -> any {
@@ -106,6 +113,26 @@ def agmem-plugin-row []: nothing -> record {
     }
 }
 
+# The rtk hook ships in settings.json (`rtk hook claude`); a user who also ran
+# `rtk init -g` has it registered twice, and each Bash call would be
+# rewritten twice. Report all three states.
+const PROJECT_SETTINGS = path self "../settings.json"
+
+def rtk-hook-row []: nothing -> record {
+    let here = (try { open --raw $PROJECT_SETTINGS } | default "" | str contains "rtk hook")
+    let global = (try { open --raw ($nu.home-dir | path join .claude settings.json) } | default "" | str contains "rtk hook")
+    if $here and $global {
+        { dep: "rtk hook", status: "DOUBLED", detail: "in project AND ~/.claude settings"
+          fix: "remove one registration — rtk rewrites every Bash call twice" }
+    } else if $here or $global {
+        { dep: "rtk hook", status: "ok"
+          detail: (if $here { "project settings.json" } else { "~/.claude/settings.json" }), fix: "" }
+    } else {
+        { dep: "rtk hook", status: "MISSING", detail: ""
+          fix: "restore the PreToolUse `rtk hook claude` entry in .claude/settings.json" }
+    }
+}
+
 def extra-rows []: nothing -> list<record> {
     $EXTRA_DEPS | each {|d|
         let cmd = $d.probe | first
@@ -124,7 +151,7 @@ def main []: nothing -> nothing {
         (dep "ast-grep" true (probe ast-grep "--version") "brew install ast-grep")
         (agmem-row)
         (agmem-plugin-row)
-    ] | append (extra-rows)
+    ] | append (extra-rows) | append [(rtk-hook-row)]
 
     let langs = project-langs
 

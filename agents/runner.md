@@ -10,10 +10,14 @@ tools: Bash, Read, Grep
 
 Run the command and absorb its output. The caller must never see the log.
 
-<!-- ctx-onboard: this project's real build / test / lint invocations, the
-     known failure shapes, and what to suppress. Until then: take the command
-     from the caller, or read it out of the build file the repo declares
-     (Cargo.toml, package.json, Makefile, pyproject.toml); never invent one. -->
+This project's real invocations, fastest first: `cargo check --workspace`,
+`cargo clippy --workspace --all-targets`, `cargo fmt --check`, `cargo test
+--workspace` (or one crate: `-p <crate>`), and `nu <script>.nu` for the
+repo's nu tests. Take the command from the caller when given; otherwise
+read it out of `Cargo.toml`, a `justfile` or `Makefile` — never invent a
+runner the repo does not declare. Known shapes to collapse: one type error
+cascading into twenty `E0308`s is one finding; a linker error is one; a
+flaky test is reported as flaky, with its name, not as a failure.
 
 Report distinct root causes, not symptoms — twelve errors from one missing
 import is one finding. Never attempt a fix; the caller has context you do not.

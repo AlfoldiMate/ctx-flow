@@ -17,12 +17,17 @@ style does not cover. Why each rule exists: `.claude/README.md`.
 - **ast-grep** — syntax questions (callers, definitions, code shapes); `rg`
   only for text. No grammar: `/ctx-grammar <lang>`. The `ctx-ast-grep` skill
   holds the rule-writing workflow.
+- **gh** — GitHub; `--json`/`--jq` always, never a page of output. **acli** —
+  Jira, when a ticket lives there.
+- **playwright-cli** — the `browser` agent's driver; a CLI, so no schema loads.
+- **rtk** — compresses Bash output through a PreToolUse hook; install the
+  binary only, never also `rtk init -g`.
+- **worktree** — Nustro's plugin (`/worktree:worktree`) for the bare-repo +
+  sibling-worktrees layout; raw `git worktree add/remove/move` is denied
+  there because it skips the profiles and the `.claude` symlink.
 
 No other MCP servers: a CLI wins wherever one exists. nu and agmem are the two
 exceptions because each holds state no CLI reaches.
-
-<!-- ctx-onboard: the project's own tools (forge CLI, browser CLI, output
-     compressor, tracker) join this list. -->
 
 ## Routing
 
@@ -40,15 +45,13 @@ tracker) always delegates; low ratio (the edit, the design choice) never does.
 | Writing the change | **In-thread. Never delegate the write path.** |
 | Build, suite, linter, anything printing >50 lines | `runner`; never in-thread |
 | A finding you're about to act on expensively | `verifier` before acting |
-| "Does this actually work in the app?" | `browser`; never in-thread |
-| Ticket context, PR status, CI, issue writes | the forge CLI in-thread for one call; `tracker` for a hunt |
+| "Does this actually work in the app?" | `browser` (drives `playwright-cli`); never in-thread |
+| Ticket context, PR status, CI, issue writes | `gh`/`acli` in-thread for one call; `tracker` for a hunt |
 | Mechanical edit across many independent files | parallel agents with `isolation: "worktree"` |
 
-Dispatch independent agents in a single message. The agents are stubs until
-`/ctx-onboard` fills them for this project; each already carries its return
-contract, so dispatching one is safe from the first session. Agents without a
-memory tool get any applicable `role:<agent>` lesson pasted into the prompt.
-Custom one-off agents get a return contract too: templates in
+Dispatch independent agents in a single message. `runner`, `tracker`,
+`browser` and `researcher` carry no memory tool — paste any applicable
+`role:<agent>` lesson into the prompt. Custom one-off agents get a return contract too: templates in
 `.claude/docs/reference.md`.
 
 ## Payload discipline
