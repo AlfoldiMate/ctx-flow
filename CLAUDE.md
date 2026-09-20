@@ -92,7 +92,9 @@ words, correct with `supersedes` and never contradict. This framework adds:
   <evidence>`); `/ctx-checkpoint` decides, and dropping is the normal outcome.
 
 Prefer several short sessions chained through memory over one long one; a hook
-says so at 120k tokens of context and per 40k after.
+says so at 120k tokens of context and per 40k after. Another names, at session
+start, a branch behind its upstream or behind main; what to do about it is the
+user's call, so ask before pulling or merging.
 
 ## Answer shape
 

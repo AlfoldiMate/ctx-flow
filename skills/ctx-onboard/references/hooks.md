@@ -31,11 +31,14 @@ def main []: any -> nothing {
 ```
 
 `_common.nu` gives you `payload` (stdin as a record, `{}` on garbage),
-`cwd-of`, `shared-root`, `branch-of`, `paths` (root, branch, `branch:<slug>`
-tag), `env-int` (an env-var knob with a default), and `context` (the
-`additionalContext` reply). Read the three shipped hooks before writing a
-fourth: `read-guard.nu` denies, `context-nudge.nu` gates once per level,
-`idiom-nudge.nu` gates once per session with a temp-dir marker.
+`cwd-of`, `git-out` (trimmed stdout of a git command, null on failure),
+`shared-root`, `branch-of`, `paths` (root, branch, `branch:<slug>` tag),
+`env-int` (an env-var knob with a default), and `context` (the
+`additionalContext` reply). Read the four shipped hooks before writing a
+fifth: `read-guard.nu` denies, `context-nudge.nu` gates once per level,
+`idiom-nudge.nu` gates once per session with a temp-dir marker,
+`branch-nudge.nu` bounds a network call with `job spawn` + `job recv
+--timeout` and falls back when it expires.
 
 ## Rules that keep hooks from being switched off
 
@@ -61,7 +64,7 @@ fourth: `read-guard.nu` denies, `context-nudge.nu` gates once per level,
 | `UserPromptSubmit` | `session_id`, `transcript_path`, `prompt` | `additionalContext` |
 | `PreToolUse` | `tool_name`, `tool_input` (`command` for Bash, `file_path`/`offset`/`limit` for Read) | `permissionDecision: deny` + reason, or nothing |
 | `PostToolUse` | `tool_name`, `tool_input`, `tool_response` | `additionalContext` |
-| `SessionStart` | `source` (startup / resume / clear / compact) | `additionalContext` |
+| `SessionStart` | `source` (startup / resume / clear / compact), `cwd` | `additionalContext` |
 | `Stop` | `stop_hook_active` | nothing, or a block with a reason (avoid: it fires mid-investigation) |
 
 Register in `settings.json`; the command is always

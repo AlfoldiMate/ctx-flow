@@ -54,7 +54,7 @@ a session:
 | `CLAUDE.md` | the routing table, payload and shell discipline, what memory adds, answer shape — rules only, under 6 kB | every session |
 | `output-styles/ctx-flow.md` | the ~25 lines that must survive momentum mid-task | every session, in the system prompt |
 | `agents/` | seven roles — `runner`, `scout`, `researcher`, `verifier`, `focus`, `browser`, `tracker` — each a return contract with a `<!-- ctx-onboard -->` marker where the project body goes | when dispatched |
-| `hooks/scripts/` | `read-guard.nu` denies whole-file reads over 300 lines; `context-nudge.nu` says "checkpoint, then clear" at 120k tokens and per 40k after; `idiom-nudge.nu` notes once per session when `sed`/`python`/`grep` stood in for nu or ast-grep | by event |
+| `hooks/scripts/` | `read-guard.nu` denies whole-file reads over 300 lines; `context-nudge.nu` says "checkpoint, then clear" at 120k tokens and per 40k after; `idiom-nudge.nu` notes once per session when `sed`/`python`/`grep` stood in for nu or ast-grep; `branch-nudge.nu` says at session start when the branch is behind its upstream or behind main (a bounded fetch, never a pull) | by event |
 | `skills/ctx-*` | `/ctx-doctor`, `/ctx-checkpoint`, `/ctx-grammar`, `/ctx-onboard`; `ctx-ast-grep` (rule writing) and `ctx-ast-grep-card` (preloaded into agents) | on invocation / preload |
 | `scripts/` | `doctor.nu`, `doc-put.nu` (a subagent's long output → an agmem document), `usage.nu` (where past sessions spent tokens), `onboard-scan.nu`, `build-grammar.nu` + `grammars.nu` | by a skill |
 | `docs/reference.md` | return-contract template, dispatch rules, the memory mapping, playbook guards, where MCP fits | on demand |
@@ -71,10 +71,12 @@ a session:
   once, slice `$history` after); `agmem` because it *is* the memory. Every
   other integration is a CLI, and an MCP server a project truly needs is
   declared on the one agent that uses it.
-- **Hooks enforce what prompts only suggest.** The three shipped ones came
-  out of a token audit: whole-file reads were 46% of result characters, the
-  longest sessions never cleared, and the house tools lost to habit on 18%
-  of Bash calls.
+- **Hooks enforce what prompts only suggest.** Three of the shipped ones
+  came out of a token audit: whole-file reads were 46% of result characters,
+  the longest sessions never cleared, and the house tools lost to habit on
+  18% of Bash calls. The fourth closes a blind spot: git state is not in the
+  context a session opens with, so a branch behind its upstream or behind
+  main is named at session start.
 - **Memory is addressed, not held.** `/ctx-checkpoint` at a seam, `/clear`,
   and the plugin's briefing opens the next session. Agents propose lessons
   (`LEARNED:`); the checkpoint gate decides, and dropping is normal.
@@ -110,7 +112,7 @@ manual for doing any of this by hand.
 | add a tool | a toolbox line in `CLAUDE.md`, an `EXTRA_DEPS` record in `scripts/doctor.nu`, a row in this README |
 | add a hook | a nu script in `hooks/scripts/` + a case file in `hooks/tests/` + a `settings.json` entry (`references/hooks.md`) |
 | add a skill | `skills/<name>/SKILL.md`; `disable-model-invocation: true` for rituals only you run |
-| tune the guards | env vars: `CTX_FLOW_READ_MAX_LINES` (300), `CTX_FLOW_READ_SMALL_BYTES` (12000), `CTX_FLOW_CONTEXT_NUDGE_TOKENS` (120000), `CTX_FLOW_CONTEXT_NUDGE_STEP` (40000) |
+| tune the guards | env vars: `CTX_FLOW_READ_MAX_LINES` (300), `CTX_FLOW_READ_SMALL_BYTES` (12000), `CTX_FLOW_CONTEXT_NUDGE_TOKENS` (120000), `CTX_FLOW_CONTEXT_NUDGE_STEP` (40000), `CTX_FLOW_BRANCH_FETCH_SECS` (6; 0 skips the fetch), `CTX_FLOW_BASE_BRANCH` (what `origin/HEAD` points at) |
 | teach ast-grep a language | `/ctx-grammar <lang>` — builds into `~/.cache/ctx-flow`, registers in a gitignored `sgconfig.yml` |
 | keep a machine-local skill | drop it in `skills/` and list it in `.gitignore` |
 
@@ -124,12 +126,12 @@ repo + sibling worktrees, with a guard hook) ship with
 .claude/
 ├── CLAUDE.md               rules; loads every session
 ├── README.md               this file
-├── settings.json           the three hooks and the output style
+├── settings.json           the four hooks and the output style
 ├── .gitignore              settings.local.json, .DS_Store, your machine-local skills
 ├── agents/                 runner, scout, researcher, verifier, focus, browser, tracker
 ├── output-styles/          ctx-flow.md
-├── hooks/scripts/          _common.nu, ctx-paths.nu, read-guard.nu, context-nudge.nu, idiom-nudge.nu
-├── hooks/tests/            read-guard.nu, context-nudge.nu
+├── hooks/scripts/          _common.nu, ctx-paths.nu, read-guard.nu, context-nudge.nu, idiom-nudge.nu, branch-nudge.nu
+├── hooks/tests/            read-guard.nu, context-nudge.nu, branch-nudge.nu
 ├── scripts/                doctor.nu, doc-put.nu, usage.nu, onboard-scan.nu, build-grammar.nu, grammars.nu
 ├── skills/                 ctx-onboard, ctx-doctor, ctx-checkpoint, ctx-grammar, ctx-ast-grep, ctx-ast-grep-card
 └── docs/reference.md
