@@ -1,0 +1,8 @@
+# session-local permissions — never ship
+settings.local.json
+
+# a machine-local skill dropped into skills/ stays untracked: list it here
+# skills/<name>/
+
+# macOS noise
+.DS_Store
