@@ -39,7 +39,13 @@ claude plugin marketplace add AlfoldiMate/agmem && claude plugin install agmem@a
 ```
 
 You do not have to *use* Nushell as your shell; the hooks run under `nu`
-whatever your terminal runs. Then, in a session:
+whatever your terminal runs. If you do, [Nustro](https://github.com/AlfoldiMate/Nustro)
+is worth installing over a bare `brew install nushell`: it is a Nushell
+distro (a checkout you install, never edit) that brings the plugins and
+modules `nu` on its own does not — `nu-config doctor`, pipeline-aware Tab
+completion for `git`, `brew` and `cargo`, `agent` (Claude Code at the
+prompt), `worktree`, and the Claude Code plugins in its `harness/`. Then, in
+a session:
 
 ```
 /ctx-doctor      # every row above, both registrations, the hooks, ast-grep on your language
