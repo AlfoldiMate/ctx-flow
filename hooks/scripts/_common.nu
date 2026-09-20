@@ -24,7 +24,7 @@ export def cwd-of [p: record]: nothing -> string {
 # Trimmed stdout of a git command, or null if it failed or git is absent.
 # Quote any argument starting with `-`, or the parser reads it as a flag of
 # this command rather than as an argument to pass through.
-def git-out [cwd: string, ...args: string]: nothing -> any {
+export def git-out [cwd: string, ...args: string]: nothing -> any {
     let r = try { ^git -C $cwd ...$args | complete }
     if ($r.exit_code? | default 1) == 0 { $r.stdout | str trim } else { null }
 }

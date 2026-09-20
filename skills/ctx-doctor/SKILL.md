@@ -37,9 +37,9 @@ Then add the four checks a script cannot do well:
    silent; a `STALE` row means no space derivation, so every project reads
    and writes one shared `default` space.
 3. **Hooks live?** Confirm `.claude/settings.json` registers the
-   UserPromptSubmit (context nudge), PreToolUse (read guard on Bash and Read)
-   and PostToolUse (idiom nudge) hooks and that the nu scripts exist at the
-   paths it names. The memory hooks — briefing, seams, recall log — are the
+   SessionStart (branch nudge), UserPromptSubmit (context nudge), PreToolUse
+   (read guard on Bash and Read) and PostToolUse (idiom nudge) hooks and that
+   the nu scripts exist at the paths it names. The memory hooks — briefing, seams, recall log — are the
    plugin's; a second `agmem context` in settings would brief twice. If
    `.claude` is a symlink, resolve it and confirm the target exists — a
    dangling symlink is the silent failure mode. `nu .claude/hooks/tests/<name>.nu`
