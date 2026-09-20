@@ -96,6 +96,7 @@ starts from here.
 | `rtk hook claude` first on `PreToolUse` `Bash` | every Bash result arrives compressed; the doctor flags a doubled registration |
 | doctor rows for gh, gh auth, playwright-cli, rtk, acli, tree-sitter | one row per routed tool |
 | toolbox lines in `CLAUDE.md` for gh/acli, playwright-cli, rtk and Nustro's `worktree` plugin | the routing table now names them |
+| `skills/rust-expert-developer` — idiomatic Rust reference (API guidelines, error handling, traits, async, unsafe, testing), loaded when writing Rust | the workspace is Rust; the reference is Nustro's, vendored here so the branch is self-contained |
 
 Not bundled, used from [Nustro](https://github.com/AlfoldiMate/Nustro): the
 `nushell` skill (deep nu reference, loaded when writing nu) and the
@@ -147,7 +148,7 @@ manual for doing any of this by hand.
 ├── hooks/scripts/          _common.nu, ctx-paths.nu, read-guard.nu, context-nudge.nu, idiom-nudge.nu
 ├── hooks/tests/            read-guard.nu, context-nudge.nu
 ├── scripts/                doctor.nu, doc-put.nu, usage.nu, onboard-scan.nu, build-grammar.nu, grammars.nu
-├── skills/                 ctx-onboard, ctx-doctor, ctx-checkpoint, ctx-grammar, ctx-ast-grep, ctx-ast-grep-card
+├── skills/                 ctx-onboard, ctx-doctor, ctx-checkpoint, ctx-grammar, ctx-ast-grep, ctx-ast-grep-card, rust-expert-developer
 └── docs/reference.md
 ```
 
