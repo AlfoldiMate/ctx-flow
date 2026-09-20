@@ -7,7 +7,7 @@
 #
 # Read-only. Transcripts live under ~/.claude/projects/<encoded cwd>/, one
 # .jsonl per session; a cwd encodes as its path with every non-alphanumeric
-# run replaced by `-`. Worktrees of one repo land in sibling directories, so
+# character replaced by `-` (`/.config` → `--config`, one dash per character). Worktrees of one repo land in sibling directories, so
 # `--all` folds every directory whose name starts with the project's.
 #
 # Usage:
@@ -21,7 +21,7 @@
 const PROJECTS = "~/.claude/projects"
 
 def encode [dir: string]: nothing -> string {
-    $dir | path expand | str replace -ra '[^A-Za-z0-9]+' "-"
+    $dir | path expand | str replace -ra '[^A-Za-z0-9]' "-"
 }
 
 # The transcript files to read, newest first.
