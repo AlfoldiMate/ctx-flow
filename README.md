@@ -53,7 +53,7 @@ a session:
 |---|---|---|
 | `CLAUDE.md` | the routing table, payload and shell discipline, what memory adds, answer shape — rules only, under 6 kB | every session |
 | `output-styles/ctx-flow.md` | the ~25 lines that must survive momentum mid-task | every session, in the system prompt |
-| `agents/` | seven roles — `runner`, `scout`, `researcher`, `verifier`, `focus`, `browser`, `tracker` — each a return contract with a `<!-- ctx-onboard -->` marker where the project body goes | when dispatched |
+| `agents/` | six roles — `runner`, `scout`, `researcher`, `verifier`, `focus`, `tracker` — each a return contract; `runner`, `scout` and `verifier` carry this project's body, the rest keep their `<!-- ctx-onboard -->` marker | when dispatched |
 | `hooks/scripts/` | `read-guard.nu` denies whole-file reads over 300 lines; `context-nudge.nu` says "checkpoint, then clear" at 120k tokens and per 40k after; `idiom-nudge.nu` notes once per session when `sed`/`python`/`grep` stood in for nu or ast-grep; `branch-nudge.nu` says at session start when the branch is behind its upstream or behind main (a bounded fetch, never a pull) | by event |
 | `skills/ctx-*` | `/ctx-doctor`, `/ctx-checkpoint`, `/ctx-grammar`, `/ctx-onboard`; `ctx-ast-grep` (rule writing) and `ctx-ast-grep-card` (preloaded into agents) | on invocation / preload |
 | `scripts/` | `doctor.nu`, `doc-put.nu` (a subagent's long output → an agmem document), `usage.nu` (where past sessions spent tokens), `onboard-scan.nu`, `build-grammar.nu` + `grammars.nu` | by a skill |
@@ -128,7 +128,7 @@ repo + sibling worktrees, with a guard hook) ship with
 ├── README.md               this file
 ├── settings.json           the four hooks and the output style
 ├── .gitignore              settings.local.json, .DS_Store, your machine-local skills
-├── agents/                 runner, scout, researcher, verifier, focus, browser, tracker
+├── agents/                 runner, scout, researcher, verifier, focus, tracker
 ├── output-styles/          ctx-flow.md
 ├── hooks/scripts/          _common.nu, ctx-paths.nu, read-guard.nu, context-nudge.nu, idiom-nudge.nu, branch-nudge.nu
 ├── hooks/tests/            read-guard.nu, context-nudge.nu, branch-nudge.nu
@@ -136,5 +136,27 @@ repo + sibling worktrees, with a guard hook) ship with
 ├── skills/                 ctx-onboard, ctx-doctor, ctx-checkpoint, ctx-grammar, ctx-ast-grep, ctx-ast-grep-card
 └── docs/reference.md
 ```
+
+## What onboarding added
+
+Run on 2026-09-20 over 40 sessions of the Nustro checkout (`scripts/usage.nu`:
+Bash was 87% of result characters — 300k on `sed`, 261k on `cat` — and no
+agent had ever been dispatched):
+
+- `agents/runner.md` — the check order (`nu-check` → `module lint` → `doctor`
+  → `tests/run.nu`), that `nu -l` runs the live clone and not the checkout, and
+  when the pty suite is worth its time.
+- `agents/scout.md` — the two-directory layout, where a command, completer,
+  theme, test and plugin live, the generated palette to skip.
+- `agents/verifier.md` — the stack's false positives: `defaults.nu` vs
+  `conf/` vs the user's `settings.nu`, lazy modules, the two `nu` binaries,
+  parse-time `alias`/`extern`, `path type` on a symlink.
+- `browser` removed — the distro has no UI; `tests/pty/` is `runner`'s.
+- the `nu` tree-sitter grammar for ast-grep, via `/ctx-grammar nu` (81 `.nu`
+  files were text-only to `rg`).
+
+Declined, and remembered so a re-run does not re-ask: `gh` as a routed
+tool (one call in-thread suffices), the `rtk` compressor hook (the read guard
+already denies the measured floods), `focus`/`researcher`/`tracker` bodies.
 
 MIT.

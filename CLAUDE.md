@@ -17,17 +17,18 @@ style does not cover. Why each rule exists: `.claude/README.md`.
 - **ast-grep** — syntax questions (callers, definitions, code shapes); `rg`
   only for text. No grammar: `/ctx-grammar <lang>`. The `ctx-ast-grep` skill
   holds the rule-writing workflow.
+- **ast-grep's `nu` grammar** — built by `/ctx-grammar nu` into `~/.cache/ctx-flow`
+  (81 `.nu` files; tree-sitter is installed). Symbol questions in Nushell source
+  are structural here too; `rg` stays for text. There is no forge agent CLI
+  wired: `gh` runs in-thread for one call, and no browser — the distro has no UI.
 
 No other MCP servers: a CLI wins wherever one exists. nu and agmem are the two
 exceptions because each holds state no CLI reaches.
 
-<!-- ctx-onboard: the project's own tools (forge CLI, browser CLI, output
-     compressor, tracker) join this list. -->
-
 ## Routing
 
 Delegate by information ratio — how much output it takes to reach the
-conclusion — not by task type. High ratio (search, suites, logs, browser,
+conclusion — not by task type. High ratio (search, suites, logs,
 tracker) always delegates; low ratio (the edit, the design choice) never does.
 
 | Situation | Action |
@@ -40,7 +41,6 @@ tracker) always delegates; low ratio (the edit, the design choice) never does.
 | Writing the change | **In-thread. Never delegate the write path.** |
 | Build, suite, linter, anything printing >50 lines | `runner`; never in-thread |
 | A finding you're about to act on expensively | `verifier` before acting |
-| "Does this actually work in the app?" | `browser`; never in-thread |
 | Ticket context, PR status, CI, issue writes | the forge CLI in-thread for one call; `tracker` for a hunt |
 | Mechanical edit across many independent files | parallel agents with `isolation: "worktree"` |
 
