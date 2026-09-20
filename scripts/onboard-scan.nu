@@ -97,7 +97,7 @@ def clis []: nothing -> table {
 # `<!-- ctx-onboard:` marker the seed ships with.
 def claude-dir []: nothing -> record {
     let root = ".claude"
-    if ($root | path type) != "dir" { return { present: false } }
+    if ($root | path expand | path type) != "dir" { return { present: false } }  # `.claude` may be a symlink
     let agents = try { glob ($root | path join "agents" "*.md") } | default []
     let stubs = $agents | where {|f| open --raw $f | str contains "<!-- ctx-onboard:" } | each {|f| $f | path parse | get stem }
     let skills = try { ls ($root | path join "skills") | where type == dir | get name | each {|d| $d | path basename } } | default []
@@ -139,7 +139,7 @@ def main [--table]: nothing -> nothing {
         print ($scan.build | table -i false)
         print ($scan.clis | where installed | table -i false)
         print ($scan.claude | table -e -i false)
-        if $usage != null { print ($usage.summary | table -e -i false); print ($usage.tools | first 8 | table -i false) }
+        if ($usage | describe) == "record" { print ($usage.summary | table -e -i false); print ($usage.tools | first 8 | table -i false) }
     } else {
         print ($scan | to json)
     }
